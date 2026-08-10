@@ -1,283 +1,257 @@
-# Line-following-electromagnetic-tricycle
+# Line-following Electromagnetic Tricycle
+> This is my first intelligent vehicle project.
 
-> This is my first project involving intelligent vehicles.
-
-## Ä¿Â¼
-
-- [Ò»¡¢ÏîÄ¿¸ÅÊö](#Ò»ÏîÄ¿¸ÅÊö)
-- [¶þ¡¢Ó²¼þÅäÖÃÓëÒý½ÅÓ³Éä](#¶þÓ²¼þÅäÖÃÓëÒý½ÅÓ³Éä)
-- [Èý¡¢¹¤³ÌÎÄ¼þÄ£¿é»¯½á¹¹](#Èý¹¤³ÌÎÄ¼þÄ£¿é»¯½á¹¹)
-- [ËÄ¡¢10msºËÐÄÖÐ¶ÏÖ´ÐÐÊ±Ðò](#ËÄ10msºËÐÄÖÐ¶ÏÖ´ÐÐÊ±Ðò)
-- [Îå¡¢ºËÐÄ¹¦ÄÜÄ£¿éÏê½â](#ÎåºËÐÄ¹¦ÄÜÄ£¿éÏê½â)
-- [Áù¡¢²ÎÊýÅäÖÃÓë¹¦ÄÜ¿ª¹Ø](#Áù²ÎÊýÅäÖÃÓë¹¦ÄÜ¿ª¹Ø)
-- [Æß¡¢±àÒë¡¢ÉÕÂ¼¡¢µ÷ÊÔ»·¾³](#Æß±àÒëÉÕÂ¼µ÷ÊÔ»·¾³)
-- [°Ë¡¢Êµ³µµ÷ÊÔ×¢ÒâÊÂÏî](#°ËÊµ³µµ÷ÊÔ×¢ÒâÊÂÏî)
-- [¾Å¡¢¿ªÔ´Ê¹ÓÃÐ­Òé](#¾Å¿ªÔ´Ê¹ÓÃÐ­Òé)
+## Table of Contents
+- [1. Project Overview](#1-project-overview)
+- [2. Hardware Configuration & Pin Mapping](#2-hardware-configuration--pin-mapping)
+- [3. Modular Structure of Engineering Files](#3-modular-structure-of-engineering-files)
+- [4. Execution Timing of 10ms Core Interrupt](#4-execution-timing-of-10ms-core-interrupt)
+- [5. Detailed Explanation of Core Functional Modules](#5-detailed-explanation-of-core-functional-modules)
+- [6. Parameter Configuration & Function Switches](#6-parameter-configuration--function-switches)
+- [7. Compilation, Flashing & Debugging Environment](#7-compilation-flashing--debugging-environment)
+- [8. On-vehicle Debugging Precautions](#8-on-vehicle-debugging-precautions)
+- [9. Open Source License Agreement](#9-open-source-license-agreement)
 
 ---
 
-## Ò»¡¢¸ÅÊö
+## 1. Project Overview
+### Introduction
+This complete source code is designed for competition-specific electromagnetic vehicle control, developed based on the `STC32G12K128` microcontroller. It supports all track operating conditions, including straight lines, large/small curves, continuous polyline turns, roundabouts, line-loss self-rescue, ultrasonic obstacle avoidance, and automatic parking by mileage.
 
-### ¼ò½é
+- **Time-shared Isolated Control**: All real-time closed-loop operations run in a 10ms timer interrupt. Screen display, key scanning and serial communication are only processed in the main loop, which avoids interference with vehicle control timing and eliminates jitter and stalling.
+- **Two Parameter Tuning Schemes**: On-site parameter adjustment without a computer via a 1.14-inch IPS screen; waveform visualization debugging via VOFA wireless serial port.
+- **Adaptive PID**: Control gains automatically switch for startup, roundabout entry, roundabout cruising, roundabout exit and line-loss conditions, balancing smooth straight-line travel and fast curve response.
+- **High-cohesion Modularization**: Sensor acquisition, PID algorithm, track logic and human-machine interaction are fully decoupled. Modifications to a single function will not affect the whole vehicle system.
 
-±¾Ì×Ô´ÂëÎª¾ºÈü×¨ÓÃÍêÕûµç´Å³µ¿ØÖÆ¹¤³Ì£¬»ùÓÚ`STC32G12K128`µ¥Æ¬»ú¿ª·¢£¬¸²¸ÇÖ±Ïß¡¢´óÐ¡ÍäµÀ¡¢Á¬ÐøÕÛÏß¡¢»·µº¡¢¶ªÏß×Ô¾È¡¢³¬Éù²¨±ÜÕÏ¡¢Àï³Ì×Ô¶¯Í£³µÈ«ÈüµÀ¹¤¿ö¡£
-
-- **·ÖÊ±¸ôÀë¿ØÖÆ**£º10ms¶¨Ê±Æ÷ÖÐ¶Ï³ÐÔØÈ«²¿ÊµÊ±±Õ»·£»ÆÁÄ»¡¢°´¼ü¡¢´®¿Ú½öÔÚÖ÷Ñ­»·ÔËÐÐ£¬²»»á¸ÉÈÅ¿Ø³µÊ±Ðò£¬ÎÞ¶¶¶¯¿¨¶Ù¡£
-
-- **Ë«µ÷²Î·½°¸**£º1.14´çIPSÆÁÏÖ³¡ÎÞµçÄÔµ÷²Î + VOFAÎÞÏß´®¿Ú²¨ÐÎ¿ÉÊÓ»¯µ÷ÊÔ¡£
-- **×ÔÊÊÓ¦PID**£ºÆð²½/Èë»·/»·ÄÚ/³ö»·/¶ªÏß×Ô¶¯ÇÐ»»¿ØÖÆÔöÒæ£¬¼æ¹ËÖ±ÏßÆ½Ë³¡¢ÍäµÀÏìÓ¦¡£
-- ¸ßÄÚ¾ÛÄ£¿é»¯£º²É¼¯¡¢PID¡¢ÈüµÀÂß¼­¡¢ÈË»ú½»»¥ÍêÈ«½âñî£¬ÐÞ¸Äµ¥Ò»¹¦ÄÜ²»Ó°ÏìÕû³µ¡£
-
-### Õû³µÓ²¼þ
-
-ÎåÂ·µç´Åµç¸Ð¡¢IMU660ÍÓÂÝÒÇ¡¢×óÓÒÕý½»±àÂëÆ÷¡¢HC-SR04³¬Éù²¨¡¢ËÄÂ·17kHz PWMµç»úÇý¶¯¡¢IPS²ÊÆÁ¡¢¶ÀÁ¢°´¼ü+²¦Âë¡¢·äÃùÆ÷¡¢µç³ØµçÑ¹¼ì²â¡£
+### Vehicle Hardware Composition
+Five electromagnetic inductors, IMU660 gyroscope, left/right orthogonal encoders, HC-SR04 ultrasonic module, 4-channel 17kHz PWM motor driver, IPS color screen, independent keys + DIP switches, buzzer, and battery voltage detection circuit.
 
 ---
 
-## ¶þ¡¢Ó²¼þÅäÖÃÓëÒý½ÅÓ³Éä
+## 2. Hardware Configuration & Pin Mapping
+### 2.1 Basic Main Controller Parameters
+| Item                       | Parameter             |
+| -------------------------- | --------------------- |
+| Main Control Chip          | STC32G12K128          |
+| Closed-loop Control Period | 10ms (TIM4 Interrupt) |
+| PWM Output Frequency       | 17000Hz               |
+| Compilation Software       | MDK FOR C251          |
 
-### 2.1 Ö÷¿Ø»ù´¡²ÎÊý
+### 2.2 Peripheral Pin Definition (Macro-defined uniformly in `basefile.h`; only macros need modification for wiring changes)
+#### 1) Electromagnetic ADC Acquisition
+| Macro Channel | Hardware Pin | Function                  |
+| ------------- | ------------ | ------------------------- |
+| ADC1          | P17          | Left Horizontal Inductor  |
+| ADC7          | P14          | Right Horizontal Inductor |
+| ADC2          | P05          | Left Vertical Inductor    |
+| ADC6          | P16          | Right Vertical Inductor   |
+| ADC4          | P06          | Middle Auxiliary Inductor |
+| protect       | P15          | Battery Voltage Detection |
 
-| ÏîÄ¿         | ²ÎÊý           |
-| ------------ | -------------- |
-| Ö÷¿ØÐ¾Æ¬     | STC32G12K128   |
-| ±Õ»·¿ØÖÆÖÜÆÚ | 10ms(TIM4ÖÐ¶Ï) |
-| PWMÊä³öÆµÂÊ  | 17000Hz        |
-| ±àÒëÈí¼þ     | MDK FOR C251   |
+#### 2) Motor Drive PWM
+| Definition | Pin  | Action               |
+| ---------- | ---- | -------------------- |
+| PWM_L1     | P62  | Left Wheel Forward   |
+| PWM_L0     | P60  | Left Wheel Backward  |
+| PWM_R1     | P66  | Right Wheel Forward  |
+| PWM_R0     | P64  | Right Wheel Backward |
 
-### 2.2 ÍâÉèÒý½Å£¨Í³Ò»ÔÚ`basefile.h`ºê¶¨Òå£¬¸ÄÏß½öÐÞ¸Äºê£©
+#### 3) Encoder Speed Measurement
+| Definition | Pin       | Function                        |
+| ---------- | --------- | ------------------------------- |
+| Encoder_L  | CTIM0_P34 | Left Wheel Pulse Counting       |
+| Dir_L      | P35       | Left Wheel Direction Judgement  |
+| Encoder_R  | CTIM3_P04 | Right Wheel Pulse Counting      |
+| Dir_R      | P53       | Right Wheel Direction Judgement |
 
-#### 1£©µç´ÅADC²É¼¯
-
-| Í¨µÀºê  | Ó²¼þÒý½Å | ¹¦ÄÜ         |
-| ------- | -------- | ------------ |
-| ADC1    | P17      | ×óºáÏòµç¸Ð   |
-| ADC7    | P14      | ÓÒºáÏòµç¸Ð   |
-| ADC2    | P05      | ×ó×ÝÏòµç¸Ð   |
-| ADC6    | P16      | ÓÒ×ÝÏòµç¸Ð   |
-| ADC4    | P06      | ÖÐÎ»¸¨Öúµç¸Ð |
-| protect | P15      | µç³ØµçÑ¹¼ì²â |
-
-#### 2£©µç»úÇý¶¯PWM
-
-| ¶¨Òå   | Òý½Å | ¶¯×÷     |
-| ------ | ---- | -------- |
-| PWM_L1 | P62  | ×óÂÖÇ°½ø |
-| PWM_L0 | P60  | ×óÂÖºóÍË |
-| PWM_R1 | P66  | ÓÒÂÖÇ°½ø |
-| PWM_R0 | P64  | ÓÒÂÖºóÍË |
-
-#### 3£©±àÂëÆ÷²âËÙ
-
-| ¶¨Òå      | Òý½Å      | ×÷ÓÃ         |
-| --------- | --------- | ------------ |
-| Encoder_L | CTIM0_P34 | ×óÂÖÂö³å¼ÆÊý |
-| Dir_L     | P35       | ×óÂÖ×ªÏòÅÐ¶Ï |
-| Encoder_R | CTIM3_P04 | ÓÒÂÖÂö³å¼ÆÊý |
-| Dir_R     | P53       | ÓÒÂÖ×ªÏòÅÐ¶Ï |
-
-#### 4£©³¬Éù²¨ÓëÈË»úÍâÉè
-
-- ³¬Éù²¨£º·¢Éä½Å`P10`£¬»Ø²¨ÖÐ¶Ï½Å`P11`
-- °´¼ü£º`P36/P71/P70/P72/P73`
-- ²¦Âë£º`P75(Boma1)`¡¢`P76(Boma2)`
-- ·äÃùÆ÷£º`P77`
-- µ÷ÊÔ´®¿Ú£º`UART4`£¨ÎÞÏßÄ£¿é¶Ô½ÓVOFA£©
+#### 4) Ultrasonic & Human-Machine Peripherals
+- Ultrasonic Module: Transmit pin `P10`, echo interrupt pin `P11`
+- Keys: `P36/P71/P70/P72/P73`
+- DIP Switches: `P75(Boma1)`, `P76(Boma2)`
+- Buzzer: `P77`
+- Debug Serial Port: `UART4` (connected to wireless module for VOFA)
 
 ---
 
-## Èý¡¢¹¤³ÌÎÄ¼þÄ£¿é»¯½á¹¹
-
-### ¹¤³ÌÄ¿Â¼Ê÷
-
+## 3. Modular Structure of Engineering Files
+### Project Directory Tree
 ```
-©À©¤©¤ main.c          ³ÌÐòÈë¿Ú¡¢×Ü³õÊ¼»¯¡¢ËùÓÐÖÐ¶ÏÈë¿Ú
-©À©¤©¤ isr.c           ´®¿Ú/¶¨Ê±Æ÷/Íâ²¿ÖÐ¶Ï·þÎñº¯Êý
-©À©¤©¤ basefile.c/h    µ×²ãÓ²¼þ³õÊ¼»¯¡¢È«¾Ö±äÁ¿¡¢Í¨ÓÃ¹¤¾ßºê
-©À©¤©¤ direction.c/h   µç¸Ð²É¼¯¡¢ÍÓÂÝÒÇ¡¢·½ÏòPD¡¢½Ç¶È¿ØÖÆÆ÷
-©À©¤©¤ speed.c/h       ±àÂëÆ÷²âËÙ¡¢×óÓÒÂÖÔöÁ¿PI¡¢PWMÊä³ö
-©À©¤©¤ wave.c/h        ³¬Éù²¨µ×²ãÇý¶¯¡¢²â¾à»»Ëã
-©À©¤©¤ element.c/h     ÈüµÀ×ÜÂß¼­¡¢²îËÙÈÚºÏ¡¢µç»úÊä³ö·ÖÅä
-©À©¤©¤ display.c/h     IPSÆÁÄ»¡¢°´¼üµ÷²Î¡¢VOFA²¨ÐÎÉÏ´«
+â”œâ”€â”€ main.c          Program entry, global initialization, all interrupt entry points
+â”œâ”€â”€ isr.c           Interrupt service functions for serial port, timer and external interrupts
+â”œâ”€â”€ basefile.c/h    Low-level hardware initialization, global variables, general utility macros
+â”œâ”€â”€ direction.c/h   Inductor sampling, gyroscope reading, directional PD, angle controller
+â”œâ”€â”€ speed.c/h       Encoder speed measurement, left/right wheel incremental PI, PWM output
+â”œâ”€â”€ wave.c/h        Low-level ultrasonic driver, distance conversion calculation
+â”œâ”€â”€ element.c/h     Overall track logic, differential speed fusion, motor output distribution
+â”œâ”€â”€ display.c/h     IPS screen driver, key-based parameter tuning, VOFA waveform upload
 ```
 
-### ¸÷ÎÄ¼þºËÐÄÖ°Ôð
-
+### Core Responsibilities of Each File
 1. **`main.c`**
-   ÉÏµçÖ´ÐÐÈ«¾Ö³õÊ¼»¯£¬¿ªÆô10ms TIM4ºËÐÄÖÐ¶Ï£»`while(1)`Ö÷Ñ­»·½ö´¦ÀíÆÁÄ»¡¢°´¼ü¡¢´®¿Ú£¬ÎÞ¿ØÖÆÂß¼­¡£°üº¬³¬Éù²¨¼ÆÊ±ÖÐ¶Ï¡¢»Ø²¨Íâ²¿ÖÐ¶Ï¡¢ËÄÂ·´®¿ÚÖÐ¶Ï¡£
+Performs global initialization on power-up and enables the 10ms TIM4 core interrupt. The infinite `while(1)` main loop only handles screen refresh, key scanning and serial communication without any control logic. It contains ultrasonic timing interrupt, echo external interrupt and four-channel serial interrupt entry functions.
+
 2. **`basefile.c/h`**
-   ·â×°ADC/±àÂëÆ÷/PWM/ÆÁÄ»/ÍÓÂÝÒÇÈ«²¿³õÊ¼»¯£»
-   `Parameter_Init()`ÉÏµç¼ÓÔØËùÓÐÔ¤Éè²ÎÊý£»
-   `Value_Update()`Í³Ò»²É¼¯½Ó¿Ú£¬ÖÐ¶ÏÒ»´ÎÐÔ¶ÁÈ¡ËùÓÐ´«¸ÐÆ÷Êý¾Ý£»
-   ÄÚÖÃÍ¨ÓÃ¹¤¾ßºê£º
-
+Encapsulates initialization of ADC, encoder, PWM, screen and gyroscope peripherals.
+- `Parameter_Init()` loads all preset parameters on power-up
+- `Value_Update()` unified sensor reading interface, acquires all sensor data once per interrupt cycle
+Built-in general utility macros:
 ```c
-func_limit_ab(x,a,b)  // Ë«±ßÏÞ·ù
-MYADS(x)              // È¡¾ø¶ÔÖµ
-GTSD(x)               // Ê®Î»È¡Õû¹éÒ»»¯
+func_limit_ab(x,a,b)  // Bilateral value limiting
+MYADS(x)              // Absolute value calculation
+GTSD(x)               // Tens digit rounding normalization
 ```
+Global flags, counters and control variables are declared as external variables here.
 
-È«¾Ö±êÖ¾¡¢¼ÆÊý¡¢¿ØÖÆ±äÁ¿Í³Ò»Íâ²¿ÉùÃ÷¡£
-3. **`direction.c/h`£¨Ñ­¼£ºËÐÄ£©**
-
-- `ADC_Getvalue()`£º5´Î²ÉÑù+Ã°ÅÝÈ¥¼«Öµ+¾ùÖµÂË²¨£»Ö§³Ö×Ô¶¯/ÊÖ¶¯µç¸Ð±ê¶¨¡¢ÊýÖµ¹éÒ»»¯£»·ÖÈüµÀ¹¤¿öÇÐ»»²î±ÈºÍËã·¨£¬Êä³öÆ«²î`inductance`£»
-- `IMU660RA_Kdread()`£ºÍÓÂÝÒÇ»¬¶¯ÂË²¨+»ý·Ö£¬»ñÈ¡³µÉíÀÛ¼Æ×ª½Ç£»
-- `Direction_Control()`×ÔÊÊÓ¦PD£¬Ë«¿Ø³µÄ£Ê½£¬µþ¼ÓÍÓÂÝÒÇÎ¢·ÖÏîÒÖÖÆË¦Î²£¬·Ö¶Î»ý·Ö·À±¥ºÍ£»
-- `Foldline_Control()`¶ÀÁ¢½Ç¶ÈPD£¬±ÜÕÏ×¨ÓÃ×ªÏò¿ØÖÆÆ÷¡£
+3. **`direction.c/h` (Core Line-following Module)**
+- `ADC_Getvalue()`: 5-point sampling, bubble sort extreme value filtering, moving average filtering; supports automatic/manual inductor calibration and signal normalization; applies weighted difference-sum algorithm for different track conditions and outputs tracking deviation `inductance`.
+- `IMU660RA_Kdread()`: Gyroscope sliding window filtering and integral calculation to obtain cumulative vehicle yaw angle.
+- `Direction_Control()`: Adaptive PD controller with two vehicle control modes; superimposes gyro differential term to suppress tail flicking; segmented integral limiting to prevent integral windup.
+- `Foldline_Control()`: Independent angle PD controller dedicated to obstacle avoidance steering.
 
 4. **`speed.c/h`**
-   `Speed_Measure()`¶ÁÈ¡±àÂëÆ÷£¬»»Ëã³µËÙ+ÀÛ¼ÆÐÐÊ»Àï³ÌS£»
-   `Speed_Control()`×óÓÒÂÖ¶ÀÁ¢ÔöÁ¿PI£¬²»Í¬¹¤¿ö×Ô¶¯ÇÐ»»²ÎÊý£»
-   `Pwm_Out()`Í³Ò»Õý¸ºÕ¼¿Õ±ÈÊä³ö·â×°¡£
-5. **`element.c/h`£¨ÈüµÀÂß¼­×Ü¿Ø£©**
-   ¼¯³É·¢³µ¡¢»·µº¡¢ÕÛÏß¡¢¶ªÏß¡¢±ÜÕÏ¡¢Í£³µÈ«Ì×ÅÐ¶Ï£»
-   `curve()`»ù´¡²îËÙ¼ÆËã£»`Motorout_Control()`µþ¼Ó¹¤¿öÐÞÕý²¢È«¾ÖÏÞ·ù£»
-   `element.h`´æ·ÅÈ«²¿¿Éµ÷ºê²ÎÊý¡£
-6. **`wave.c/h`** ³¬Éù²¨IO¡¢ÖÐ¶ÏÅäÖÃ¡¢¶¨Ê±·¢Éä¡¢»Ø²¨¼ÆÊ±¾àÀë»»Ëã¡£
+- `Speed_Measure()` reads encoder pulses and converts data to real-time vehicle speed and cumulative travel distance `S`.
+- `Speed_Control()` independent incremental PI controllers for left and right wheels; parameters auto-switch under different track conditions.
+- `Pwm_Out()` unified encapsulated interface for positive/negative duty cycle output.
+
+5. **`element.c/h` (Master Track Logic Controller)**
+Integrates full judgment logic for vehicle startup, roundabouts, polyline turns, line loss, obstacle avoidance and automatic parking.
+- `curve()` calculates basic differential speed
+- `Motorout_Control()` superimposes correction values based on track conditions and applies global output limiting
+All adjustable macro parameters are stored in `element.h`.
+
+6. **`wave.c/h`** Configures ultrasonic IO ports and interrupts, triggers periodic ultrasonic transmission, calculates measured distance via echo timing.
+
 7. **`display.c/h`**
-   6´óÀàÏÔÊ¾Ò³Ãæ£¬°´¼ü·­Ò³/Ôö¼õ²ÎÊý/Ò»¼üÕû³µ¸´Î»£»¸¡µãÊý×ª4×Ö½Ú£¬6Í¨µÀ²¨ÐÎÉÏ´«VOFAÉÏÎ»»ú¡£
-8. **`isr.c`** ½öÖÐ¶Ï»Øµ÷£¬ÎÞÒµÎñÂß¼­£¬Ö»»º´æÊý¾Ý¡¢ÖÃ±êÖ¾Î»¡£
+Contains six categories of display pages; supports page flipping, parameter increment/decrement and one-click full vehicle reset via physical keys. Converts floating-point numbers to 4-byte data and uploads 6-channel real-time waveforms to VOFA host computer.
+
+8. **`isr.c`** Only contains interrupt callback logic; no business algorithms, solely responsible for data caching and flag bit assertion.
 
 ---
 
-## ËÄ¡¢10msÖÐ¶ÏÖ´ÐÐÊ±Ðò
-
-> Ë³Ðò¹Ì¶¨²»¿Éµ÷»»£¬½ûÖ¹ÔÚÖÐ¶ÏÄÚÌí¼ÓÑÓÊ±¡¢Ë¢ÆÁ¡¢´óÁ¿´®¿Ú·¢ËÍ
-
+## 4. Execution Timing of 10ms Core Interrupt
+> Execution sequence is fixed and non-adjustable. Delays, screen refreshing and massive serial transmission are strictly forbidden inside the interrupt service routine.
 ```mermaid
 flowchart LR
-A[wave_trigger ³¬Éù²¨·¢Éä] --> B[Value_Update È«´«¸ÐÆ÷²É¼¯]
-B --> C[Element_Run ÈüµÀ¹¤¿öÅÐ¶ÏË¢ÐÂ±êÖ¾]
-C --> D[PID_Count ·½Ïò»·+ËÙ¶È»·ÔËËã]
-D --> E[curve »ù´¡²îËÙ¼ÆËã]
-E --> F[Motorout_Control ¹¤¿öµþ¼Ó+Êä³öÏÞ·ù]
-F --> G[Pwm_Out ¸üÐÂËÄÂ·µç»úPWM]
+A[wave_trigger Ultrasonic Transmission] --> B[Value_Update Full Sensor Sampling]
+B --> C[Element_Run Track Condition Judgment & Flag Refresh]
+C --> D[PID_Count Direction Loop + Speed Loop Calculation]
+D --> E[curve Basic Differential Speed Calculation]
+E --> F[Motorout_Control Condition Superposition & Output Limiting]
+F --> G[Pwm_Out Update 4-channel Motor PWM Signals]
 ```
 
-Ö÷Ñ­»·½öÖ´ÐÐ3Ïî·ÇÊµÊ±ÈÎÎñ£º
-
-1. VOFA´®¿Ú²¨ÐÎ·¢ËÍ
-2. °´¼üÉ¨Ãè
-3. IPSÆÁÄ»Ë¢ÐÂ
-
----
-
-## Îå¡¢ºËÐÄ¹¦ÄÜÄ£¿éÏê½â
-
-### 5.1 µç´Åµç¸ÐÐÅºÅ´¦Àí
-
-1. **½µÔëÂË²¨**£ºÃ¿×éÁ¬Ðø²É¼¯5´Î£¬ÅÅÐòÌÞ³ý×î´ó×îÐ¡Öµ£¬È¡ÖÐ¼äÈý×éÆ½¾ùÖµ£»
-2. **Ë«·½°¸£¬¹éÒ»»¯ÕÒ×î´óÖµ**
-   - ×Ô¶¯±ê¶¨£º`zuizhi_button=1`£¬ÉÏµç×Ô¶¯²É¼¯µç¸Ð·åÖµ´æÈëÊý×é£»
-   - ÊÖ¶¯±ê¶¨£ºÖ±½ÓÐÞ¸Ä`element.h`ÄÚ`ADC_SLm`µÈºê£»
-3. **¹éÒ»»¯**£º¿ªÆô`guiyihua_button`Í³Ò»µç¸ÐÊýÖµÇø¼ä£¬Ïû³ýÓ²¼þ¸öÌå²îÒì£»
-4. **¶¯Ì¬²î±ÈºÍ**£ºÖ±Ïß²àÖØºáÏòµç¸Ð£¬»·µº/ÍäµÀ¼Ó´ó×ÝÏòÈ¨ÖØ£¬ÌáÉý×ªÏòÁéÃô¶È¡£
-
-### 5.2 ×ÔÊÊÓ¦·½Ïò»·PD¿ØÖÆÆ÷
-
-| car_mode   | ¿ØÖÆÂß¼­                              | ÊÊÓÃ³¡¾°       |
-| ---------- | ------------------------------------- | -------------- |
-| 0          | Îó²îÁ¢·½¶¯Ì¬Éú³ÉKP£¬Ð¡Îó²îÔöÒæÆ½»º    | µÍËÙË³»¬ÈüµÀ   |
-| 1          | Îó²îÇø¼ä·Ö¶Î¹Ì¶¨KP/KD£¬´óÎó²î¿ìËÙÏìÓ¦ | ¸ßËÙ¶à¼±ÍäÈüµÀ |
-| ¸½¼ÓÓÅ»¯£º |                                       |                |
-
-- ÒýÈëÍÓÂÝÒÇÎ¢·ÖÏî£¬µÖÏû¹ýÍä¹ßÐÔË¦Î²£»
-- ½öÎó²î³¬ãÐÖµÊ±ÀÛ¼Ó»ý·Ö£¬Ð¡·ùÆ«²îÖ±½ÓÇåÁã£¬¶Å¾ø»ý·Ö±¥ºÍ£»
-- ¶ªÏß¡¢Èë»·¡¢³ö»·×Ô¶¯¸²¸ÇPIDÔöÒæÓëµç»úÊä³öÏÞ·ù¡£
-
-### 5.3 ËÙ¶È±Õ»·¿ØÖÆ
-
-×óÓÒÁ½Ì×¶ÀÁ¢ÔöÁ¿Ê½PI£¬½â¾öµç»ú×ªËÙ²»Ò»ÖÂÅÜÆ«£º
-
-- Æð²½½×¶Î·Å´óPÖµ£¬¿ìËÙ´ïµ½Ä¿±ê³µËÙ£»
-- »·µº¡¢±ÜÕÏ×Ô¶¯½µµÍ×î´óÊä³ö£¬·ÀÖ¹³å³öÈüµÀ£»
-- ±àÂëÆ÷ÀÛ¼ÆÀï³Ì£¬µ½´ïÉè¶¨¾àÀë×Ô¶¯Í£»ú¸´Î»¡£
-
-### 5.4 »·µºÍêÕûÊ¶±ðÂß¼­
-
-1. Ô¤Èë»·£º×óÓÒºáÏòµç¸ÐÍ¬Ê±Âú·ù£¬ÅÐ¶¨»·µºÈë¿Ú£»
-2. ·½ÏòÇø·Ö£º×ÝÏòµç¸Ð²îÖµÅÐ¶Ï×ó/ÓÒ»·µº£»
-3. Èë»·£ºÍÓÂÝÒÇ×ª½Ç´ï±ê£¬ÇÐ»»»·ÄÚÐ¡ÔöÒæPID£»
-4. ³ö»·£ºÀÛ¼Æ×ª½Ç½Ó½ü¡À360¡ã+ºáÏòµç¸ÐÂú·ùÅÐ¶¨Ê»³ö£»
-5. ³ö»·×Ô¶¯ÖØÖÃ½Ç¶È¡¢¼ÆÊý¡¢ËùÓÐ¹¤¿ö±êÖ¾¡£
-
-### 5.5 ÕÛÏß¹ýÍä
-
-µç´ÅÎó²î¾ø¶ÔÖµ£¾80ÅÐ¶¨¹Õµã£¬Á½¶Î²îËÙ¼õËÙ£º
-
-1. µÚÒ»¶Îµ¥±ß´ó·ù¼õËÙ£¬ËõÐ¡×ªÍä°ë¾¶£»
-2. µÚ¶þ¶ÎË«ÂÖÍ¬²½Êä³öÆ½ÎÈ»ØÕý£»¼ÆÊý´ï±ê×Ô¶¯»Ö¸´Ö±ÐÐ²îËÙ¡£
-
-### 5.6 ¶ªÏß±£»¤»úÖÆ
-
-ÎåÂ·µç¸Ð²ÉÑùÈ«²¿µÍÓÚãÐÖµÅÐ¶¨ÍêÈ«¶ªÏß£º
-
-- ¶ÌÊ±¶ªÏß£ºµ¥²àµç»úµ¹³µÐ¡·ùÑ°Ïß£»
-- ³¬Ê±¶ªÏß£ºµç»úÇåÁã£¬µ÷ÓÃ`rest()`Õû³µÍ£»ú¸´Î»£¬·ÀÖ¹³å³öÈüµÀ¡£
-
-### 5.7 ³¬Éù²¨±ÜÕÏÁ÷³Ì
-
-1. ²â¾àµÍÓÚãÐÖµ´¥·¢±ÜÕÏ£¬ÁÙÊ±¹Ø±Õµç´Å·½Ïò»·£»
-2. ÆôÓÃÍÓÂÝÒÇ½Ç¶ÈPD£¬·ÖÁ½´Î¹Ì¶¨½Ç¶È×ªÏò±ÜÕÏ£»
-3. ÐÐÊ»Ö¸¶¨¾àÀëºó·´Ïò»ØÕý£¬×Ô¶¯»Ö¸´Ñ­¼£¡£
-
-### 5.8 Ë«µ÷ÊÔÏµÍ³
-
-- **±¾µØµ÷²Î£¨IPSÆÁ+°´¼ü£©**
-  Áù´óÒ³Ãæ£ºÔ­Ê¼ADC¡¢¹¤¿ö±êÖ¾¡¢³µËÙµçÑ¹¡¢PID²ÎÊý¡¢¹¦ÄÜ¿ª¹Ø¡¢·¢³µÉèÖÃ£¬ÎÞµçÄÔÏÖ³¡ÐÞ¸ÄÈ«²¿²ÎÊý¡£
-- **ÉÏÎ»»úµ÷ÊÔ£¨VOFA+£©**
-  ×Ô¶¨Òå6Í¨µÀ¸¡µã²¨ÐÎÊµÊ±ÉÏ´«£¬Ö±¹Û¹Û²âµç¸ÐÆ«²î¡¢³µËÙ¡¢ÍÓÂÝÒÇ£¬¿ìËÙÕû¶¨PID¡£
+Only three non-real-time tasks run in the main loop:
+1. VOFA serial waveform data transmission
+2. Physical key scanning
+3. IPS screen refresh rendering
 
 ---
 
-## Áù¡¢²ÎÊýÅäÖÃÓë¹¦ÄÜ¿ª¹Ø
+## 5. Detailed Explanation of Core Functional Modules
+### 5.1 Electromagnetic Inductor Signal Processing
+1. **Noise Reduction Filtering**: Collect 5 consecutive samples per channel, discard maximum and minimum values after sorting, then average the remaining three readings.
+2. **Two Calibration Schemes + Normalization to Find Peak Values**
+    - Automatic Calibration: Set `zuizhi_button=1` to automatically sample inductor peak values and store them in an array on power-up.
+    - Manual Calibration: Directly modify macros such as `ADC_SLm` defined in `element.h`.
+3. **Signal Normalization**: Enable `guiyihua_button` to unify the range of inductor readings and eliminate hardware individual differences.
+4. **Dynamic Weighted Difference-Sum Algorithm**: Higher weights assigned to horizontal inductors for straight-line tracking; increased vertical inductor weights for roundabouts and sharp curves to boost steering responsiveness.
 
-### 6.1 ¿Éµ÷Õû²ÎÊý·ÖÀà£¨È«²¿¶¨ÒåÓÚ`element.h`£©
+### 5.2 Adaptive Direction-loop PD Controller
+| car_mode                 | Control Logic                                                | Applicable Scenario                          |
+| ------------------------ | ------------------------------------------------------------ | -------------------------------------------- |
+| 0                        | Dynamic KP generated via error cubic function for gentle gain variation under small tracking errors | Low-speed smooth tracks                      |
+| 1                        | Fixed segmented KP/KD for different error ranges to enable fast response under large deviations | High-speed tracks with frequent sharp curves |
+| Additional Optimizations | â€”                                                            | â€”                                            |
 
-1. PIDÀà£º·½Ïò»·P/I/D¡¢ÍÓÂÝÒÇÎ¢·Ö`dirangle_D`¡¢×óÓÒËÙ¶È»·P/I/D
-2. µç´ÅÀà£º²î±ÈºÍ¼ÓÈ¨ÏµÊý`Pa/Pb/Pc/Pp`¡¢µç¸Ð±ê¶¨×î´óÖµ¡¢¹éÒ»»¯ÏµÊý
-3. ÏÞ·ùÀà£ºPIDÎó²îÏÞ·ù¡¢»ý·ÖÏÞ·ù¡¢µç»ú×î´óÊä³öÕ¼¿Õ±È
-4. ãÐÖµÀà£º»·µº¾àÀë¡¢ÕÛÏßÎó²î¡¢³¬Éù²¨´¥·¢¾àÀë¡¢Í£³µÀï³Ì¡¢±ÜÕÏ×ª½Ç
+- Gyroscope differential term introduced to counteract inertial tail flick during cornering
+- Integral accumulation only activated when tracking error exceeds threshold; integral cleared directly under minor deviation to eliminate windup
+- PID gains and maximum motor output limits automatically overwritten during line loss, roundabout entry and roundabout exit
 
-### 6.2 È«¾Ö¹¦ÄÜ¿ª¹Ø£¨ÆÁÄ»Ä£Ê½Ò³Ò»¼üÇÐ»»£©
+### 5.3 Closed-loop Speed Control
+Two independent incremental PI controllers for left and right wheels to solve vehicle drift caused by inconsistent motor speeds:
+- Amplified proportional gain during startup to rapidly reach target speed
+- Maximum output automatically reduced when navigating roundabouts or avoiding obstacles to prevent track departure
+- Cumulative mileage recorded via encoders; vehicle automatically stops and resets upon reaching preset travel distance
 
-| ¿ª¹Ø±äÁ¿        | ¹¦ÄÜËµÃ÷                    |
-| --------------- | --------------------------- |
-| guiyihua_button | µç¸ÐÊýÖµ¹éÒ»»¯¿ªÆô/¹Ø±Õ     |
-| zuizhi_button   | ÉÏµç×Ô¶¯²É¼¯µç¸Ð×îÖµ±ê¶¨    |
-| fold_button     | ÕÛÏß¹ýÍä¹¦ÄÜÊ¹ÄÜ            |
-| bizhang_button  | ³¬Éù²¨×Ô¶¯±ÜÕÏÊ¹ÄÜ          |
-| car_mode        | ÇÐ»»·½Ïò»·Á½ÖÖ×ÔÊÊÓ¦PIDËã·¨ |
-| chuankou_button | VOFA´®¿Ú²¨ÐÎÉÏ´«¿ª¹Ø        |
+### 5.4 Complete Roundabout Recognition Logic
+1. Pre-entry Detection: Full saturation readings from both horizontal inductors trigger roundabout entry judgment
+2. Turning Direction Classification: Difference between vertical inductor readings determines left/right roundabout
+3. Roundabout Cruising: Switch to low-gain PID once cumulative gyro yaw angle reaches threshold
+4. Roundabout Exit: Exit confirmed when cumulative rotation angle approaches Â±360Â° plus full saturation horizontal inductor signals
+5. Post-exit Reset: Automatically reset yaw angle, counters and all track condition flags
+
+### 5.5 Polyline Corner Navigation
+Polyline inflection point detected when absolute electromagnetic tracking error > 80; two-stage differential deceleration applied:
+1. Stage 1: Heavy deceleration on single wheel to minimize turning radius
+2. Stage 2: Balanced synchronized wheel output for smooth straightening; standard straight-line differential speed restored after counting threshold met
+
+### 5.6 Line-loss Protection Mechanism
+Complete line loss is triggered when readings from all five inductors drop below threshold:
+- Short-term line loss: Slight reverse rotation of single wheel to search for track lines
+- Long-term line loss: Motor outputs cleared; `rest()` function called to fully reset the vehicle and prevent off-track runaways
+
+### 5.7 Ultrasonic Obstacle Avoidance Workflow
+1. Obstacle avoidance activated when measured distance falls below threshold; electromagnetic direction loop temporarily disabled
+2. Gyro angle PD controller enabled to execute two fixed-angle steering maneuvers for obstacle bypass
+3. Travel preset distance then reverse steering to straighten trajectory, automatically restore electromagnetic line-following control
+
+### 5.8 Dual Debugging System
+- **Local Parameter Tuning (IPS Screen + Physical Keys)**
+Six functional pages: Raw ADC readings, track condition flags, vehicle speed & battery voltage, PID parameter panel, function switch panel, startup configuration. All parameters adjustable on-site without a computer.
+- **Host Computer Debugging (VOFA+)**
+Customizable 6-channel floating-point real-time waveform upload; intuitive visualization of tracking deviation, vehicle speed and gyroscope data for rapid PID parameter tuning.
 
 ---
 
-## Æß¡¢±àÒë¡¢ÉÕÂ¼¡¢µ÷ÊÔ»·¾³
+## 6. Parameter Configuration & Function Switches
+### 6.1 Adjustable Parameter Categories (All Defined in `element.h`)
+1. PID Parameters: Direction loop P/I/D gains, gyro differential coefficient `dirangle_D`, left/right speed loop P/I gains
+2. Electromagnetic Tracking Parameters: Weighting coefficients `Pa/Pb/Pc/Pp` for difference-sum algorithm, calibrated maximum inductor readings, normalization coefficients
+3. Limiting Parameters: PID error limit, integral saturation limit, maximum motor output duty cycle
+4. Threshold Parameters: Roundabout detection distance, polyline trigger error, ultrasonic obstacle distance threshold, parking mileage, obstacle avoidance turning angle
 
-| ¹¤¾ß     | °æ±¾/ËµÃ÷                            |
-| -------- | ------------------------------------ |
-| ±àÒëIDE  | MDK FOR C251 V5.60                   |
-| Ä¿±êÐ¾Æ¬ | STC32G12K128                         |
-| ÉÕÂ¼Èí¼þ | STC-ISP£¨IRCÊ±ÖÓÓëmain×¢ÊÍ±£³ÖÒ»ÖÂ£© |
-| ²¨ÐÎµ÷ÊÔ | VOFA+£¨ÎÞÏß´®¿ÚÅäÌ×£©                |
-
-> ×¢Òâ£ºÉÕÂ¼Èí¼þÏµÍ³Ê±ÖÓÓë´úÂë×¢ÊÍ²»Ò»ÖÂ»áµ¼ÖÂ´®¿Ú¡¢PWM¡¢¶¨Ê±Æ÷È«²¿Ê±Ðò´íÂÒ¡£
-
----
-
-## °Ë¡¢Êµ³µµ÷ÊÔ×¢ÒâÊÂÏî
-
-1. 10msÖÐ¶ÏÄÚ½ûÖ¹ÑÓÊ±¡¢Ë¢ÆÁ¡¢´óÁ¿´®¿Ú·¢ËÍ£¬»áÆÆ»µ±Õ»·ÖÜÆÚ£¬³µÁ¾ÑÏÖØ¶¶¶¯£»
-2. ¸ü»»µç¸Ð¡¢¸ü»»ÈüµÀºó£¬Îñ±Ø¿ªÆô×Ô¶¯±ê¶¨£¬·ñÔò²î±ÈºÍ¼ÆËãÆ«ÒÆ¡¢³µÁ¾ÅÜÆ«£»
-   3 PIDµ÷²ÎË³Ðò£ºÆÁÄ»´Öµ÷ ¡ú VOFA²¨ÐÎÏ¸µ÷£»Ö±Ïß¶¶¶¯¼Ó´óKD£¬¹ýÍä³åµÀ½µµÍKP£»
-3. ³¬Éù²¨Ò×ÊÜÇ¿¹â¡¢µØÃæ·´¹â¸ÉÈÅ£¬Îó´¥·¢¿Éµ÷´ó`wave_limit`¾àÀëãÐÖµ£»
-4. ´úÂëÄÚÖÃµÍÑ¹¼ì²âº¯Êý£¬È¡Ïû×¢ÊÍ¿É¿ªÆôµÍÑ¹×Ô¶¯Í£»ú£¬³¤Ê±¼äÊÔ³µ½¨ÒéÆôÓÃ£»
-5. Õû³µ¸´Î»Í³Ò»µ÷ÓÃ`rest()`£¬²»Òªµ¥¶ÀÇåÁãµ¥¸ö±êÖ¾/¼ÆÊý£¬±ÜÃâÂß¼­²ÐÁôÂÒÅÜ¡£
+### 6.2 Global Function Switches (Toggle via Mode Page on Screen)
+| Switch Variable | Function Description                                         |
+| --------------- | ------------------------------------------------------------ |
+| guiyihua_button | Enable/disable inductor signal normalization                 |
+| zuizhi_button   | Enable automatic peak-value calibration of inductors on power-up |
+| fold_button     | Enable/disable polyline corner navigation function           |
+| bizhang_button  | Enable/disable automatic ultrasonic obstacle avoidance       |
+| car_mode        | Switch between two adaptive PID algorithms for direction loop |
+| chuankou_button | Toggle VOFA serial waveform data upload                      |
 
 ---
 
-## ¾Å¡¢¿ªÔ´Ê¹ÓÃÐ­Òé
+## 7. Compilation, Flashing & Debugging Environment
+| Tool                       | Version & Description                                |
+| -------------------------- | ---------------------------------------------------- |
+| Compilation IDE            | MDK FOR C251 V5.60                                   |
+| Target Microcontroller     | STC32G12K128                                         |
+| Flash Programming Software | STC-ISP (IRC clock must match the comment in main.c) |
+| Waveform Debugging Tool    | VOFA+ (paired with wireless serial module)           |
 
-1. ±¾¹¤³Ì»ùÓÚÖð·É¿Æ¼¼STC32Gµ×²ãÇý¶¯¶þ´Î¿ª·¢£¬**½öÔÊÐí¸ßÐ£ÖÇÄÜ³µ¾ºÈüÑ§Ï°½»Á÷£¬½ûÖ¹ÉÌÓÃÓ¯Àû**¡£
-2. ¶þ´ÎÐÞ¸Ä¡¢×ª·¢¡¢·ÖÏí¹¤³ÌÊ±£¬²»µÃÉ¾³ý´úÂëÄÚÔ­Ê¼°æÈ¨×¢ÊÍ¡£
-3. ´úÂëÔ¤ÁôÆÂµÀ¡¢Ê®×ÖÈüµÀ¡¢Ô¶³ÌÒ£¿ØÍØÕ¹¿ò¼Ü£¬Ê¹ÓÃÕß¿É×ÔÐÐÐÂÔö¹¤¿öÅÐ¶ÏÂß¼­¡£
+> Note: Mismatched system clock settings between flash software and code comments will cause timing disorder for serial ports, PWM outputs and all timers.
+
+---
+
+## 8. On-vehicle Debugging Precautions
+1. Delays, screen refresh and mass serial transmission are prohibited inside the 10ms interrupt service routine. These operations break the closed-loop control cycle and cause severe vehicle vibration.
+2. Automatic inductor calibration must be executed after replacing inductors or changing tracks. Uncalibrated signals lead to biased difference-sum calculation and vehicle drift.
+3. PID tuning workflow: Rough adjustment via IPS screen â†’ fine tuning with VOFA waveform observation. Increase KD to suppress straight-line jitter; reduce KP if vehicle rushes out of curves.
+4. Ultrasonic sensors are susceptible to strong ambient light and ground reflections. Increase `wave_limit` distance threshold to eliminate false obstacle triggers.
+5. Low-battery detection function is embedded in code; uncomment the corresponding segment to enable automatic low-voltage shutdown, recommended for long-duration vehicle testing.
+6. Always call the unified `rest()` function for full vehicle reset. Do not manually clear individual flags or counters separately, which leaves residual logic states and causes erratic vehicle movement.
+
+---
+
+## 9. Open Source License Agreement
+1. This project is secondary developed based on the underlying driver library for STC32G provided by Zhufei Technology. The code is **only permitted for learning and communication in university intelligent vehicle competitions; commercial profit-making use is prohibited**.
+2. Original copyright comments embedded in source code shall not be deleted during secondary modification, redistribution or sharing of this project.
+3. The code reserves extension frameworks for ramp tracks, cross tracks and remote control functions. Users may independently add judgment logic for additional track conditions.
+
+### Translation Standard Notes
+1. Terminology strictly follows international intelligent vehicle & embedded industry standards (e.g. incremental PI, integral windup, duty cycle, closed-loop control, interrupt service routine)
+2. All variable/function macro names retain original C code identifiers without translation for engineering consistency
+3. Competition-specific track terms (roundabout, polyline fold, line-following electromagnetic vehicle) adopt commonly accepted wording in global university autonomous vehicle contests
+4. Technical sentence structure conforms to English embedded open-source README writing conventions; ambiguous Chinese descriptive expressions rephrased for native engineering readability
+5. Hardware brand, chip model, software names keep official original English naming
